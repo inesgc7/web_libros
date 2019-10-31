@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="jquery.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="bootstrap.css">
+    <script src="bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.dataTables.min.css">
+    <script src="jquery.dataTables.min.js"></script>
+    
+    <title>Formulario Libros</title>
+    <style>
+        h1 {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            background-color: whitesmoke;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            //esconder boton editar al cargar la pagina
+            $("#boton_editar").hide();
+            $("#boton_borrar").hide();
+
+            //esconde boton editar, muestar boton guardar, limpiar los campos del formulario
+            $("#boton_limpiar_campos").click(function () {
+                $("#boton_editar").hide();
+                $("#boton_borrar").hide();
+                $("#boton_guardar").show();
+                $('#formulario_libro').trigger("reset");
+            });
+
+            //Al hacer click sobre el boton borrar
+            $("#boton_borrar").click(function () {
+                var codigo = $("#codigo").val();
+                $.ajax({
+                    url: 'http://127.0.0.1:8080/libro?codigo='+ codigo,
+                    type: 'DELETE',
+                    success: function (result) {
+                        alert("El Libro se borro!");  
+                        location.reload(true); 
+                    }
+                });
+            });
+
+            //oculta el titulo del formulario al hacer un click
+            $("#titulo_formulario").click(function () {
+                $("#titulo_formulario").fadeOut("slow", function () {});
+            });
+
+            //estila el libro para modificar
+            $("#codigo").on('keypress', function (e) {
+                if (e.which == 13) {
+                    var codigo = $("#codigo").val();
+                    $.get("http://127.0.0.1:8080/libro?codigo=" + codigo, function (respuesta, status) {
+                        $("#nombre").val(respuesta.data[0].nombre);
+                        $("#fecha_publicacion").val(respuesta.data[0].fecha_publicacion);
+                        $("#autor").val(respuesta.data[0].autor);
+                        $("#ubicacion").val(respuesta.data[0].ubicacion);
+                        $("#boton_guardar").hide();
+                        $("#boton_editar").show();
+                        $("#boton_borrar").show();
+                    });
+                }
+            });
+
+            //convierte el texto del campo ubicacion en mayusculas
+            $("#ubicacion").keyup(function () {
+                var texto_anterior = $("#ubicacion").val();
+                var texto_mayuscula = texto_anterior.toUpperCase();
+                $("#ubicacion").val(texto_mayuscula);
+            });
+
+            var tabla_libros = $('#listado_libros').DataTable({
+                "scrollY": "300px",
+                "scrollX": "200px",
+                "scrollCollapse": true,
+                "paging": true,
+                "ajax": "http://127.0.0.1:8080/libro",
+                "columns": [{
+                        "data": "codigo"
+                    },
+                    {
+                        "data": "fecha_publicacion"
+                    },
+                    {
+                        "data": "autor"
+                    },
+                    {
+                        "data": "nombre"
+                    },
+                    {
+                        "data": "ubicacion"
+                    }
+                ]
+            });
+        });
+    </script>
+</head>
+
+
+<!--------------------------------------------------------------------------------------------------------------->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="libros.html">Libros</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarColor01">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Algo xddd<span class="sr-only">(current)</span></a>
+            </li>
+          </ul>
+
+        </div>
+      </nav>
+<!--------------------------------------------------------------------------------------------------------------->
+
+
+
+<body>
+
+    <div class="container">
+
+        <h1 class="text-center" id="titulo_formulario">Registrar Libro</h1>
+
+        <!-- Formulario para registrar un libro -->
+        <form id="formulario_libro" action="http://localhost:8080/libro" method="post">
+            <table border="0">
+                <tr>
+                    <th>
+                        <label for="codigo">Codigo:</label>
+                    </th>
+                    <th>
+                        <input type="number" name="codigo" id="codigo" required>
+                    </th>
+
+                </tr>
+
+                <tr>
+                    <th><label for="nombre">Nombre:</label></th>
+                    <th><input type="text" name="nombre" id="nombre" required></th>
+                </tr>
+
+                <tr>
+                    <th><label for="fecha_nacimiento">Fecha Publicacion:</label></th>
+                    <th><input type="date" name="fecha_publicacion" id="fecha_publicacion" required></th>
+                </tr>
+
+                <tr>
+                    <th><label for="autor">Autor:</label></th>
+                    <th> <select id=autor name="autor">
+                            <option value="josefina_pla">Josefina Pla</option>
+                            <option value="augusto_roa_bastos">Augusto Roa Bastos</option>
+                            <option value="Julio Correa">Julio Correa</option>
+                            <option value="Mario Zippoli">Mario Zippoli</option>
+                        </select>
+                    </th>
+                </tr>
+
+                <tr>
+                    <th><label for="ubicacion">Ubicacion:</label></th>
+                    <th><textarea rows="4" cols="50" id="ubicacion" name="ubicacion"></textarea></th>
+                </tr>
+
+            </table>
+
+            <br>
+            <div class="text-center">
+                <input type="submit" value="GUARDAR" class="btn btn-outline-primary" id="boton_guardar">
+                <input type="submit" value="EDITAR" class="btn btn-outline-primary" id="boton_editar">
+                <input type="button" value="BORRAR" class="btn btn-outline-danger" id="boton_borrar">
+                <input type="button" value="LIMPIAR CAMPOS" class="btn btn-outline-warning" id="boton_limpiar_campos">
+            </div>
+        </form>
+
+
+        <br>
+        <table id="listado_libros" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Codigo</th>
+                    <th>Fecha</th>
+                    <th>Autor</th>
+                    <th>Nombre</th>
+                    <th>Ubicacion</th>
+                </tr>
+            </thead>
+        </table>
+
+    </div>
+
+</body>
+
+</html>
